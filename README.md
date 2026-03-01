@@ -71,9 +71,6 @@ To get started with the Sign Language Translator, follow these steps:
 1. Clone the repository:
 
 ```shell
-git clone https://github.com/uzibytes/sign2text.git
-```
-```shell
 cd sign2text
 ```
 
