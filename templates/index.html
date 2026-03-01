@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign language detection project </title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    :root {
+      --brand: #dc2626;         /* red-600 */
+      --brand-700: #b91c1c;     /* darker hover */
+      --ink: #0f172a;           /* slate-900 */
+      --muted: #475569;         /* slate-600 */
+      --card: #ffffff;          /* white */
+      --ring: rgba(220, 38, 38, .35);
+    }
+
+    html, body { height: 100%; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: #fafafa;
+      color: var(--ink);
+    }
+
+    .navbar {
+      border-bottom: 1px solid #eee;
+      background: #fff !important;
+    }
+    .navbar .navbar-brand { color: var(--brand); font-weight: 700; letter-spacing: .2px; }
+    .navbar .badge-soft { background: rgba(220,38,38,.1); color: var(--brand); }
+
+    .card-clean {
+      background: var(--card);
+      border: 1px solid #eee;
+      border-radius: 1rem;
+      box-shadow: 0 6px 24px rgba(0,0,0,.04);
+    }
+
+    .ratio-16x9 { border-radius: .75rem; overflow: hidden; }
+
+    .btn-brand { background: var(--brand); border-color: var(--brand); color: #fff; }
+    .btn-brand:hover { background: var(--brand-700); border-color: var(--brand-700); }
+    .btn-outline-brand { border-color: var(--brand); color: var(--brand); }
+    .btn-outline-brand:hover { background: var(--brand); color: #fff; }
+
+    .text-muted { color: var(--muted) !important; }
+
+    /* Translated text display */
+    .translated-box {
+      border: 1px dashed rgba(0,0,0,.15);
+      border-radius: .75rem;
+      padding: 1rem 1.25rem;
+      min-height: 3.25rem;
+      display: flex;
+      align-items: center;
+      font-size: 1.125rem;
+      line-height: 1.6;
+      background: #fff;
+    }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header / Nav -->
+  <nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+        <img src="https://we-recycle.org/wp-content/uploads/2014/03/dtu-logo.png" alt="DTU Logo" width="36" height="36" class="rounded" loading="lazy" />
+        <span>Delhi Technological University</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="nav">
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <span class="badge rounded-pill badge-soft">Designed by Sahil</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="container py-5">
+    <div class="row g-4 align-items-stretch">
+      <!-- Sign Chart -->
+      <section class="col-12 col-lg-5">
+        <div class="card-clean h-100 p-4">
+          <h1 class="h3 mb-2" style="color: var(--brand)">Sign to Text – Live</h1>
+          <p class="text-muted">A clean, responsive UI that streams predictions from your server and lets you speak the output aloud.</p>
+          <div class=" mb-3">
+            <img
+              src="https://raw.githubusercontent.com/uzibytes/Sign2Text/master/hand-signs-of-the-ASL-Language.png"
+              alt="ASL letters reference"
+              class="w-100 h-100 object-fit-cover"
+              loading="lazy"
+            />
+            <img
+                src="https://i.ibb.co/ZJ7858c/customsl.jpg"
+                alt="ASL letters reference"
+                class="w-100 h-100 object-fit-cover"
+                loading="lazy"
+                />
+
+          </div>
+         
+        </div>
+      </section>
+
+      <!-- Live Feed & Text -->
+      <section class="col-12 col-lg-7">
+        <div class="card-clean h-100 p-4 d-flex flex-column gap-3">
+          <h2 class="h5 mb-0">Live feed</h2>
+          <div class="ratio ratio-16x9">
+            <!-- Flask/Jinja endpoint; keep as-is -->
+            <img src="{{ url_for('video_feed') }}" alt="Live camera feed" class="w-100 h-100 object-fit-cover" />
+          </div>
+
+          <!-- Translated text (DISPLAY ONLY) -->
+          <div>
+            <label class="form-label mb-2" for="translatedTextDisplay">Translated text</label>
+            <div id="translatedTextDisplay" class="translated-box" role="status" aria-live="polite" aria-atomic="true">—</div>
+          </div>
+
+          <div class="d-flex gap-2 mt-auto">
+            <button id="resetButton" class="btn btn-outline-brand" type="button" title="Clear text">Reset</button>
+            <button id="speakButton" class="btn btn-brand" type="button" title="Speak text" disabled>
+              <span class="d-none d-sm-inline">Speak</span>
+              <span class="d-inline d-sm-none">🔊</span>
+            </button>
+          </div>
+
+          
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- JS -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // --- Socket.IO ---
+    let socket;
+    try {
+      socket = io(); // defaults to same-origin
+      socket.on('connect', () => console.log('[socket] connected'));
+      socket.on('connect_error', (err) => console.warn('[socket] connect_error', err));
+
+      // Expecting { text: string }
+      socket.on('prediction', (data) => {
+        const box = document.getElementById('translatedTextDisplay');
+        if (data && typeof data.text === 'string') {
+          box.textContent = data.text || '—';
+        }
+      });
+    } catch (e) {
+      console.warn('Socket.IO not available:', e);
+    }
+
+    // --- Controls ---
+    const box = document.getElementById('translatedTextDisplay');
+    const resetButton = document.getElementById('resetButton');
+    const speakButton = document.getElementById('speakButton');
+
+    resetButton.addEventListener('click', () => {
+      box.textContent = '—';
+    });
+
+    // --- Speech Synthesis ---
+    let voices = [];
+    function populateVoices() {
+      voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+      speakButton.disabled = !('speechSynthesis' in window);
+    }
+    populateVoices();
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    function pickVoice(preferredNames = [
+      'Microsoft Sonia Online (Natural) - English (United Kingdom)',
+      'Google UK English Female',
+      'Google US English',
+      'English (India)'
+    ]) {
+      for (const name of preferredNames) {
+        const found = voices.find(v => v.name === name);
+        if (found) return found;
+      }
+      return voices.find(v => /en|English/i.test(v.lang)) || voices[0];
+    }
+
+    speakButton.addEventListener('click', () => {
+      const text = (box.textContent || '').trim();
+      if (!text || text === '—') return;
+      if (!('speechSynthesis' in window)) return alert('Speech synthesis is not supported in this browser.');
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.voice = pickVoice();
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+ENV/
+env/
+.build/
+dist/
+build/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Notebooks & caches
+.ipynb_checkpoints/
+
+# Data/models (adjust as you like)
+data/
+datasets/
+checkpoints/
+models/
+*.h5
+*.pt
+*.pth
+*.onnx
+*.pb
+*.tflite
+*.zip
+*.tar
+*.tar.gz
+
+# Logs
+logs/
+*.log
