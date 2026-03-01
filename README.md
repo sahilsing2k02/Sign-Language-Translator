@@ -2,6 +2,14 @@
 
 A real-time application for detecting and recognizing sign language gestures using a webcam feed.
 
+The Sign Language Recognition project focuses on developing an intelligent system that can understand and interpret hand gestures used in sign language and convert them into text or speech. The main goal of this project is to help bridge the communication gap between hearing-impaired individuals and the general public.
+
+In this project, we used Machine Learning and Deep Learning techniques, especially Convolutional Neural Networks (CNNs), to recognize hand gestures from images or live video input. The system captures hand gestures through a camera, processes the image, extracts important features, and predicts the corresponding alphabet, word, or sentence.
+
+The dataset consists of labeled images of different sign language gestures. After preprocessing and training the model, it can accurately classify gestures in real time. Technologies such as Python, OpenCV, TensorFlow/Keras were used for implementation.
+
+This project demonstrates practical applications of AI in assistive technology and highlights how deep learning can be used to solve real-world social problems.
+
 ## Table of Contents
 
 - [Aim](#aim)
@@ -99,3 +107,10 @@ cd sign2text
     ```
 
 4. The web interface will display the webcam feed and detected sign language gestures.
+
+Some Samples of output
+<img width="1908" height="978" alt="image" src="https://github.com/user-attachments/assets/27062d36-da59-43c1-b278-993697cffba1" />
+<img width="1910" height="972" alt="Screenshot 2026-03-01 093224" src="https://github.com/user-attachments/assets/c8c37339-35cd-409f-97fe-05d1aa08d052" />
+<img width="1913" height="979" alt="Screenshot 2026-03-01 093148" src="https://github.com/user-attachments/assets/995b0f0e-206b-4beb-aa3f-a7a13e7f245f" />
+
+
